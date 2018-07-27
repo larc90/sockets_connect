@@ -12,7 +12,12 @@ typedef int                 s32;
 typedef float               f32;
 typedef double              f64;
 
-#define TRUE (1U)
-#define FALSE (0U)
+#ifndef TRUE
+#define TRUE  (1U)
+#endif
+
+#ifndef FALSE
+#define FALSE  (0U)
+#endif
 
 #endif // STDTYPES_H
