@@ -1,0 +1,4 @@
+FROM ubuntu
+MAINTAINER leo090990@hotmail.com
+COPY /build/bin/skycatch_test /bin/
+COPY test_client.jpg /bin/
