@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
+#include <netdb.h>
+#include <ifaddrs.h>
 #include "stdtypes.h"
 #include "ExifTool.h"
 #include "socket_connect.h"
@@ -26,10 +28,9 @@ boolean  Connection_Utilities::add_client_info (const s8* Img_str) {
 
   // Create user comment and insert it into 'Exif_Buf'
   create_user_comment ();
-  cout << Exif_Buf <<"\n";
 
   // Set new tag:value
-  s32 cnt = et->SetNewValue ((const s8*) "User Comment", (const s8*) Exif_Buf);
+  s32 cnt = et->SetNewValue ((const s8*) "UserComment", (const s8*) Exif_Buf);
 
   // write the tag:value in image
   et->WriteInfo(Img_str);
@@ -94,11 +95,31 @@ void Connection_Utilities::create_user_comment () {
  ** @return      Status - TRUE/FALSE
  **/
 boolean Connection_Utilities::is_local_ip () {
-  boolean Status = TRUE;
+  struct sockaddr_in* temp_ip_addr;
+  struct sockaddr_in* temp_subnet_mask;
+  boolean Status = FALSE;
 
-  inet_ntop ((s32) AF_INET, (const void*) &socket_server_addr.sin_addr.s_addr, 
-             (s8*) server_ip_str, (socklen_t) INET_ADDRSTRLEN);
-  cout << server_ip_str <<"\n";
+  // Get list of all network interfaces in server side
+  getifaddrs (&if_addr_list);
+
+  // Loop through each network interface and verify if some of them match client's network
+  for (if_addr_aux = if_addr_list; if_addr_aux != NULL; if_addr_aux = if_addr_aux->ifa_next) {
+
+    if ((if_addr_aux->ifa_addr == NULL) ||
+        (if_addr_aux->ifa_netmask == NULL) ||
+        (if_addr_aux->ifa_addr->sa_family == AF_PACKET)) {
+      continue;
+    }
+
+    temp_ip_addr = (struct sockaddr_in*) if_addr_aux->ifa_addr;
+    temp_subnet_mask = (struct sockaddr_in*) if_addr_aux->ifa_netmask;
+
+    if ((temp_ip_addr->sin_addr.s_addr & temp_subnet_mask->sin_addr.s_addr) == 
+        (socket_client_addr.sin_addr.s_addr & temp_subnet_mask->sin_addr.s_addr)) {
+      Status = TRUE;
+      break;
+    }
+  }
 
   return (Status);  
 }
@@ -166,7 +187,8 @@ boolean Connection_Utilities::Create_Socket () {
  ** @param[out]  Ip_Addr - IPv4 Address assigned
  ** @return      None
  **/
-void Connection_Utilities::Config_Server (u16 Port, const s8* Ip_Addr) {
+void Connection_Utilities::Config_Server (const s8* Port, const s8* Ip_Addr) {
+  u16 Port_Num = atoi (Port);
   socket_server_addrlen = sizeof (socket_server_addr);
 
   memset (&socket_server_addr, '0', socket_server_addrlen);
@@ -178,7 +200,7 @@ void Connection_Utilities::Config_Server (u16 Port, const s8* Ip_Addr) {
   } else {
     socket_server_addr.sin_addr.s_addr = INADDR_ANY;
   }
-  socket_server_addr.sin_port = htons(Port);  // Converts to network byte order
+  socket_server_addr.sin_port = htons(Port_Num);  // Converts to network byte order
 }
 
 /* Function:     bind_server */

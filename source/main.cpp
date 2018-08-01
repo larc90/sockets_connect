@@ -21,7 +21,6 @@ using namespace std;
  **/
 int main (int argc, char const *argv[]) {
   Connection_Utilities Conn_Utils;
-  u16 Port_Num;
   boolean Configuration = CLIENT_CONF;
 
 #ifdef __WIN32__
@@ -40,8 +39,6 @@ int main (int argc, char const *argv[]) {
     Configuration = SERVER_CONF;
   }
 
-  Port_Num = atoi (argv[2]);
-
   // Create local socket
   if (Conn_Utils.Create_Socket() == FALSE) {
     exit (EXIT_FAILURE);
@@ -51,7 +48,7 @@ int main (int argc, char const *argv[]) {
   if (Configuration == SERVER_CONF) {
 
     // Configure Server
-    Conn_Utils.Config_Server (Port_Num, NULL);
+    Conn_Utils.Config_Server (argv[2], NULL);
 
     // Bind the server to the IP address and port number specified
     if (Conn_Utils.bind_server () == FALSE) {
@@ -82,7 +79,7 @@ int main (int argc, char const *argv[]) {
     }
 
     // Configure Server
-    Conn_Utils.Config_Server (Port_Num, argv[3]);
+    Conn_Utils.Config_Server (argv[2], argv[3]);
 
     // Initiates a connection with server socket
     if (Conn_Utils.connect_server () == FALSE) {

@@ -10,7 +10,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <netdb.h>
 #endif
 
 
@@ -45,12 +44,14 @@ class Connection_Utilities {
     s32 socket_client_addrlen;
     s32 socket_local_desc;
     s32 socket_remote_desc;
-    s8 server_ip_str[INET_ADDRSTRLEN]; /**< string of server's IP **/
-    s8 client_ip_str[INET_ADDRSTRLEN]; /**< string of client's IP **/
-    FILE* image; /**< Pointer to client/server image **/
+    s8 server_ip_str[INET_ADDRSTRLEN];       /**< string of server's IP **/
+    s8 client_ip_str[INET_ADDRSTRLEN];       /**< string of client's IP **/
+    struct ifaddrs* if_addr_list;            /**< Main network interface list **/
+    struct ifaddrs* if_addr_aux;             /**< Auxiliar network interface list **/
+    FILE* image;                             /**< Pointer to client/server image **/
     s8 Id_Buf[ID_STR_SIZE + IMG_SIZE_BYTES]; /**< buffer for identifier connection **/
-    s8 Exif_Buf[MAX_EXIF_VALUE]; /**< Buffer for Exif tags **/
-    s8 Img_buf[MAX_CHUNK_IMG]; /**< Buffer for send/receive chunks **/
+    s8 Exif_Buf[MAX_EXIF_VALUE];             /**< Buffer for Exif tags **/
+    s8 Img_buf[MAX_CHUNK_IMG];               /**< Buffer for send/receive chunks **/
     boolean add_client_info (const s8*);
     void create_user_comment ();
     boolean is_local_ip (); 
@@ -60,7 +61,7 @@ class Connection_Utilities {
     void End_Winsock ();
 #endif
     boolean Create_Socket ();
-    void Config_Server (u16, const s8*);
+    void Config_Server (const s8*, const s8*);
     boolean bind_server ();
     boolean listen_client (s32);
     boolean accept_client ();
