@@ -5,7 +5,6 @@
     docker run --name bld_cont -it -t bld:1.0
 
   0.2. Install packages to run G++ compiler (Inside of bld_cont):
-    apt-get update && apt-get install build-essential
     cd /build
     g++ -c main.cpp socket_connect.cpp
     g++ -o skycatch_test -static main.o socket_connect.o
@@ -17,8 +16,7 @@
     docker cp bld_cont:/build/skycatch_test <Local path in your system>\build\bin
 
   0.4. If compilation got errors, move corrected files from local folder to bld_cont:
-    docker cp <Local path in your system>\source\*.c bld_cont:/build/
-
+    docker cp C:\Users\uidj1176\Documents\Skycatch_Test\Test\source\<file> bld_cont:/build/
 
 1. Create docker network to use:
   docker network create --subnet=<subnet Ipv4>/<subnet mask> mylocalnet
@@ -44,7 +42,7 @@
     docker build --tag client:1.0 -f <folder in your sytem>/dockerfile_client.txt .
     docker run --name client_cont --net mylocalnet --ip <Client Ipv4> --name client_cont --rm -i -t client:1.0 /bin/bash
 
-    NOTE: Make sure 'Client Ipv4' is part of 'mylocal net'
+    NOTE: Make sure 'Client Ipv4' is part of 'mylocalnet'
 
   3.2 Run client from container:
     cd bin
@@ -52,6 +50,8 @@
 
 
 4. Verify correct image received:
+  exiftool test_server.jpg --->
+    source_ip:<client's ip>,is_from_local_network:<true/false>
   docker cp server_cont:/bin/test_server.jpg <your local patch>
   (Verify image size matches with the client one)
   (Open some appl to watch image and check it matches with client one)

@@ -1,6 +1,16 @@
 FROM ubuntu:latest
+
 MAINTAINER leo090990@hotmail.com
+
 COPY /source/main.cpp /build/
 COPY /source/socket_connect.cpp /build/
 COPY /source/socket_connect.h /build/
 COPY /source/stdtypes.h /build/
+COPY /source/libexiftool/ExifTool.cpp /build/
+COPY /source/libexiftool/ExifTool.h /build/
+COPY /source/libexiftool/ExifToolPipe.cpp /build/
+COPY /source/libexiftool/ExifToolPipe.h /build/
+COPY /source/libexiftool/TagInfo.cpp /build/
+COPY /source/libexiftool/TagInfo.h /build/
+
+RUN apt-get update && apt-get -y install build-essential

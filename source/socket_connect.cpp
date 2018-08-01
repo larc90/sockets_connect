@@ -4,12 +4,107 @@
 #include <string.h>
 #include <iostream>
 #include "stdtypes.h"
+#include "ExifTool.h"
 #include "socket_connect.h"
 
 using namespace std;
 
-FILE* image;
-s8 Img_buf[MAX_CHUNK_IMG];
+/********* Private functions definition **********/
+
+/* Function:     add_client_info */
+/** @brief       Add metada on received image about IP address of client.
+ **
+ ** @param[in]   Img_str- Points to image path.
+ ** @param[out]  None
+ ** @return      Status - TRUE/FALSE
+ **/
+boolean  Connection_Utilities::add_client_info (const s8* Img_str) {
+  boolean Status = TRUE;
+
+  // create ExifTool object
+  ExifTool *et = new ExifTool();
+
+  // Create user comment and insert it into 'Exif_Buf'
+  create_user_comment ();
+  cout << Exif_Buf <<"\n";
+
+  // Set new tag:value
+  s32 cnt = et->SetNewValue ((const s8*) "User Comment", (const s8*) Exif_Buf);
+
+  // write the tag:value in image
+  et->WriteInfo(Img_str);
+
+  // wait for exiftool to finish writing
+  if ((et->Complete (10)) < 1) {
+    cout << "  ERROR: executing exiftool command!\n";
+    Status = FALSE;
+  }
+
+  // checking the number of update errors
+  if ((et->GetSummary (SUMMARY_FILE_UPDATE_ERRORS)) > 0) {
+    cout << "  ERROR: The exiftool application was not successful.\n";
+    Status = FALSE;
+  }
+
+  // Delete ExifTool object
+  delete et;
+
+  return (Status);
+}
+
+/* Function:     create_user_comment */
+/** @brief       Insert user comment "source_ip:<ther.source.ip.address>,is_from_local_network:<true/false>"
+ **              into 'Exif_Buf'.
+ **
+ ** @param[in]   None.
+ ** @param[out]  None
+ ** @return      None.
+ **/
+void Connection_Utilities::create_user_comment () {
+
+  inet_ntop ((s32) AF_INET, (const void*) &socket_client_addr.sin_addr.s_addr, 
+             (s8*) client_ip_str, (socklen_t) INET_ADDRSTRLEN);
+
+  strncpy ((s8*) &Exif_Buf[0], (const s8*) "source_ip:<", 
+           (size_t) strlen((const s8*) "source_ip:<"));
+
+  s32 str_offset = strlen ((const s8*) "source_ip:<");
+  strncpy ((s8*) &Exif_Buf[str_offset], (const s8*) client_ip_str,
+           (size_t) strlen((const s8*) client_ip_str));
+
+  str_offset += strlen ((const s8*) client_ip_str);
+  strncpy ((s8*) &Exif_Buf[str_offset], (const s8*) ">,is_from_local_network:<",
+           (size_t) strlen((const s8*) ">,is_from_local_network:<"));
+
+  str_offset += strlen ((const s8*) ">,is_from_local_network:<");
+  if (is_local_ip () == TRUE) {
+    strncpy ((s8*) &Exif_Buf[str_offset], (const s8*) "true>",
+             (size_t) strlen((const s8*) "true>"));
+  } else {
+    strncpy ((s8*) &Exif_Buf[str_offset], (const s8*) "false>",
+             (size_t) strlen((const s8*) "false>"));
+  }
+}
+
+/* Function:     is_local_ip */
+/** @brief       Determine is the received image comes from a local network.
+ **
+ ** @param[in]   None.
+ ** @param[out]  None
+ ** @return      Status - TRUE/FALSE
+ **/
+boolean Connection_Utilities::is_local_ip () {
+  boolean Status = TRUE;
+
+  inet_ntop ((s32) AF_INET, (const void*) &socket_server_addr.sin_addr.s_addr, 
+             (s8*) server_ip_str, (socklen_t) INET_ADDRSTRLEN);
+  cout << server_ip_str <<"\n";
+
+  return (Status);  
+}
+
+
+/********* Public functions definition **********/
 
 #ifdef __WIN32__
 /* Function:     Init_WinSock */
@@ -185,7 +280,6 @@ boolean Connection_Utilities::connect_server () {
 boolean Connection_Utilities::receive_img (const s8* Img_str) {
   s32 chunk_Sz;
   s32 Img_Sz;
-  s8 Id_Buf[ID_STR_SIZE + IMG_SIZE_BYTES];
   boolean Status = TRUE;
 
   // Check if some client has sent request to transfer new image
@@ -237,6 +331,11 @@ boolean Connection_Utilities::receive_img (const s8* Img_str) {
   // Send message to indicate ending of transference
   send (socket_remote_desc, (const s8*) END_IMG_TX_ID, (size_t) ID_STR_SIZE, 0);
 
+  // Stamps client's ip address into metadata of received image
+  if (add_client_info (Img_str) == FALSE) {
+    Status = FALSE;
+  }
+
   return (Status);
 }
 
@@ -251,7 +350,6 @@ boolean Connection_Utilities::receive_img (const s8* Img_str) {
  **/
 boolean Connection_Utilities::send_img (const s8* Img_str) {
   s32 chunk_Sz;
-  s8 Id_Buf[ID_STR_SIZE + IMG_SIZE_BYTES];
   boolean Status = TRUE;
 
   image = fopen(Img_str, "rb");

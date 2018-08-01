@@ -5,11 +5,12 @@
 #include <winsock2.h>
 #include "wininet.h"
 
-#pragma comment (lib,"libwsock32.a")
+//#pragma comment (lib,"libwsock32.a")
 #else
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #endif
 
 
@@ -22,6 +23,7 @@
 #define QUEUE_CONNECTIONS (3) /**< Max queue of pending connections to be stored in server side **/
 
 #define MAX_CHUNK_IMG  (1024)  /**< Maximum size of image chunks to be transfered **/
+#define MAX_EXIF_VALUE (60)    /**< Maximum size of buffer to be showed up in value field **/
 #define ID_STR_SIZE    (3)     /**< Size of identifiers **/
 #define IMG_SIZE_BYTES (4)     /**< bytes dedicated to image size **/
 
@@ -43,6 +45,15 @@ class Connection_Utilities {
     s32 socket_client_addrlen;
     s32 socket_local_desc;
     s32 socket_remote_desc;
+    s8 server_ip_str[INET_ADDRSTRLEN]; /**< string of server's IP **/
+    s8 client_ip_str[INET_ADDRSTRLEN]; /**< string of client's IP **/
+    FILE* image; /**< Pointer to client/server image **/
+    s8 Id_Buf[ID_STR_SIZE + IMG_SIZE_BYTES]; /**< buffer for identifier connection **/
+    s8 Exif_Buf[MAX_EXIF_VALUE]; /**< Buffer for Exif tags **/
+    s8 Img_buf[MAX_CHUNK_IMG]; /**< Buffer for send/receive chunks **/
+    boolean add_client_info (const s8*);
+    void create_user_comment ();
+    boolean is_local_ip (); 
   public:
 #ifdef __WIN32__
     boolean Init_WinSock ();
