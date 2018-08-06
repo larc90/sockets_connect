@@ -1,18 +1,31 @@
+/** @file socket_connect.cpp
+ **
+ ** Definitions for connections utilities.
+ **
+ ** @author: Leonel Robles
+ ** @since: Jul-2018
+ **/
+
+ 
+/********* Header includes **********/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
-#include <netdb.h>
+#ifndef __WIN32__
 #include <ifaddrs.h>
-#include "stdtypes.h"
+#include <netdb.h>
 #include "ExifTool.h"
+#endif
+#include "stdtypes.h"
 #include "socket_connect.h"
 
 using namespace std;
 
-/********* Private functions definition **********/
 
+/********* Private functions definition **********/
+#ifndef __WIN32__
 /* Function:     add_client_info */
 /** @brief       Add metada on received image about IP address of client.
  **
@@ -62,11 +75,12 @@ boolean  Connection_Utilities::add_client_info (const s8* Img_str) {
  ** @return      None.
  **/
 void Connection_Utilities::create_user_comment () {
+  s8 client_ip_str[INET_ADDRSTRLEN];
 
-  inet_ntop ((s32) AF_INET, (const void*) &socket_client_addr.sin_addr.s_addr, 
+  inet_ntop ((s32) AF_INET, (const void*) &socket_client_addr.sin_addr.s_addr,
              (s8*) client_ip_str, (socklen_t) INET_ADDRSTRLEN);
 
-  strncpy ((s8*) &Exif_Buf[0], (const s8*) "source_ip:<", 
+  strncpy ((s8*) &Exif_Buf[0], (const s8*) "source_ip:<",
            (size_t) strlen((const s8*) "source_ip:<"));
 
   s32 str_offset = strlen ((const s8*) "source_ip:<");
@@ -114,15 +128,16 @@ boolean Connection_Utilities::is_local_ip () {
     temp_ip_addr = (struct sockaddr_in*) if_addr_aux->ifa_addr;
     temp_subnet_mask = (struct sockaddr_in*) if_addr_aux->ifa_netmask;
 
-    if ((temp_ip_addr->sin_addr.s_addr & temp_subnet_mask->sin_addr.s_addr) == 
+    if ((temp_ip_addr->sin_addr.s_addr & temp_subnet_mask->sin_addr.s_addr) ==
         (socket_client_addr.sin_addr.s_addr & temp_subnet_mask->sin_addr.s_addr)) {
       Status = TRUE;
       break;
     }
   }
 
-  return (Status);  
+  return (Status);
 }
+#endif
 
 
 /********* Public functions definition **********/
@@ -353,11 +368,12 @@ boolean Connection_Utilities::receive_img (const s8* Img_str) {
   // Send message to indicate ending of transference
   send (socket_remote_desc, (const s8*) END_IMG_TX_ID, (size_t) ID_STR_SIZE, 0);
 
+#ifndef __WIN32__
   // Stamps client's ip address into metadata of received image
   if (add_client_info (Img_str) == FALSE) {
     Status = FALSE;
   }
-
+#endif
   return (Status);
 }
 

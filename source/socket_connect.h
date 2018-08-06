@@ -1,6 +1,15 @@
+/** @file socket_connect.h
+ **
+ ** Header file for connection utilities class.
+ **
+ ** @author: Leonel Robles
+ ** @since: Jul-2018
+ **/
+
 #ifndef SOCKET_CONN_H
 #define SOCKET_CONN_H
 
+/********* Header includes **********/
 #ifdef __WIN32__
 #include <winsock2.h>
 #include "wininet.h"
@@ -44,17 +53,17 @@ class Connection_Utilities {
     s32 socket_client_addrlen;
     s32 socket_local_desc;
     s32 socket_remote_desc;
-    s8 server_ip_str[INET_ADDRSTRLEN];       /**< string of server's IP **/
-    s8 client_ip_str[INET_ADDRSTRLEN];       /**< string of client's IP **/
     struct ifaddrs* if_addr_list;            /**< Main network interface list **/
     struct ifaddrs* if_addr_aux;             /**< Auxiliar network interface list **/
     FILE* image;                             /**< Pointer to client/server image **/
     s8 Id_Buf[ID_STR_SIZE + IMG_SIZE_BYTES]; /**< buffer for identifier connection **/
     s8 Exif_Buf[MAX_EXIF_VALUE];             /**< Buffer for Exif tags **/
     s8 Img_buf[MAX_CHUNK_IMG];               /**< Buffer for send/receive chunks **/
+#ifndef __WIN32__
     boolean add_client_info (const s8*);
     void create_user_comment ();
-    boolean is_local_ip (); 
+    boolean is_local_ip ();
+#endif
   public:
 #ifdef __WIN32__
     boolean Init_WinSock ();

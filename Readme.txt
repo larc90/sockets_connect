@@ -1,7 +1,7 @@
 0. Create the exe file (skycatch_test) inside a docker container (Do it only if you don´t have any ubunto OS in your system):
   0.1. Created image  and container where to build binary:
     (Inside of 1st command line -> bld_cont)
-    docker build --tag bld:1.0 -f <Local path in your system>/dockerfile_build.txt .
+    docker build --tag bld:1.0 -f <YourLocalPath>/dockerfile_build.txt .
     docker run --name bld_cont -it -t bld:1.0
 
   0.2. Run compilation and linking (Inside of bld_cont):
@@ -10,15 +10,15 @@
     g++ -o skycatch_test -static main.o socket_connect.o ExifTool.o ExifToolPipe.o TagInfo.o
 
   0.3. To send exe and object files from bld_cont to some folder in our PC:
-    docker cp bld_cont:/build/main.o C:\Users\uidj1176\Documents\Skycatch_Test\Test\build\object
-    docker cp bld_cont:/build/socket_connect.o C:\Users\uidj1176\Documents\Skycatch_Test\Test\build\object
-    docker cp bld_cont:/build/ExifTool.o C:\Users\uidj1176\Documents\Skycatch_Test\Test\build\object
-    docker cp bld_cont:/build/ExifToolPipe.o C:\Users\uidj1176\Documents\Skycatch_Test\Test\build\object
-    docker cp bld_cont:/build/TagInfo.o C:\Users\uidj1176\Documents\Skycatch_Test\Test\build\object
-    docker cp bld_cont:/build/skycatch_test C:\Users\uidj1176\Documents\Skycatch_Test\Test\build\bin
+    docker cp bld_cont:/build/main.o <YourLocalPath>\build\object
+    docker cp bld_cont:/build/socket_connect.o <YourLocalPath>\build\object
+    docker cp bld_cont:/build/ExifTool.o <YourLocalPath>\build\object
+    docker cp bld_cont:/build/ExifToolPipe.o <YourLocalPath>\build\object
+    docker cp bld_cont:/build/TagInfo.o <YourLocalPath>\build\object
+    docker cp bld_cont:/build/skycatch_test <YourLocalPath>\build\bin
 
   0.4. If compilation got errors, move corrected files from local folder to bld_cont and repeat step 0.2:
-    docker cp C:\Users\uidj1176\Documents\Skycatch_Test\Test\source\<file> bld_cont:/build/
+    docker cp <YourLocalPath>\<file> bld_cont:/build/
 
 
 1. Create docker network to use:

@@ -1,7 +1,15 @@
+/** @file stdtypes.h
+ **
+ ** Standard types for skycatch test.
+ **
+ ** @author: Leonel Robles
+ ** @since: Jul-2018
+ **/
 
 #ifndef STDTYPES_H
 #define STDTYPES_H
 
+/********* Typedef definitions **********/
 typedef unsigned char       u8;
 typedef char                s8;
 typedef unsigned short      u16;

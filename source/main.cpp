@@ -1,3 +1,13 @@
+/** @file main.cpp
+ **
+ ** Main file for server/client functionality.
+ **
+ ** @author: Leonel Robles
+ ** @since: Jul-2018
+ **/
+
+
+/********* Header includes **********/
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
@@ -6,6 +16,8 @@
 
 using namespace std;
 
+
+/********* Global functions definition **********/
 
 /* Function:     main */
 /** @brief       Configures a client or server (depending of arguments given)
